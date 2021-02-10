@@ -1243,8 +1243,8 @@ public:
 
     sp<media::VolumeHandler>       mVolumeHandler;
 
-    int64_t                mPauseTimeRealUs;
     const std::string      mOpPackageName;
+    int64_t                mPauseTimeRealUs;
 
 private:
     class DeathNotifier : public IBinder::DeathRecipient {

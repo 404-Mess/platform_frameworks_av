@@ -225,8 +225,8 @@ AudioTrack::AudioTrack(const std::string& opPackageName)
       mPausedPosition(0),
       mSelectedDeviceId(AUDIO_PORT_HANDLE_NONE),
       mRoutedDeviceId(AUDIO_PORT_HANDLE_NONE),
-      mPauseTimeRealUs(0),
       mOpPackageName(opPackageName),
+      mPauseTimeRealUs(0),
       mAudioTrackCallback(new AudioTrackCallback())
 {
     mAttributes.content_type = AUDIO_CONTENT_TYPE_UNKNOWN;
@@ -260,8 +260,8 @@ AudioTrack::AudioTrack(
       mPreviousPriority(ANDROID_PRIORITY_NORMAL),
       mPreviousSchedulingGroup(SP_DEFAULT),
       mPausedPosition(0),
-      mPauseTimeRealUs(0),
       mOpPackageName(opPackageName),
+      mPauseTimeRealUs(0),
       mAudioTrackCallback(new AudioTrackCallback())
 {
     mAttributes = AUDIO_ATTRIBUTES_INITIALIZER;
@@ -297,8 +297,8 @@ AudioTrack::AudioTrack(
       mPreviousSchedulingGroup(SP_DEFAULT),
       mPausedPosition(0),
       mSelectedDeviceId(AUDIO_PORT_HANDLE_NONE),
-      mPauseTimeRealUs(0),
       mOpPackageName(opPackageName),
+      mPauseTimeRealUs(0),
       mTrackOffloaded(false),
       mAudioTrackCallback(new AudioTrackCallback())
 {
