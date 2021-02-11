@@ -335,7 +335,7 @@ public:
 
     c2_status_t _createBlockPool(
             C2PlatformAllocatorStore::id_t allocatorId,
-            std::shared_ptr<const C2Component> component,
+            std::vector<std::shared_ptr<const C2Component>> components,
             C2BlockPool::local_id_t poolId,
             std::shared_ptr<C2BlockPool> *pool) {
         std::shared_ptr<C2AllocatorStore> allocatorStore =
@@ -356,7 +356,9 @@ public:
                                     allocator, poolId);
                     *pool = ptr;
                     mBlockPools[poolId] = ptr;
-                    mComponents[poolId] = component;
+                    mComponents[poolId].insert(
+                           mComponents[poolId].end(),
+                           components.begin(), components.end());
                 }
                 break;
             case C2PlatformAllocatorStore::BLOB:
@@ -368,7 +370,9 @@ public:
                                     allocator, poolId);
                     *pool = ptr;
                     mBlockPools[poolId] = ptr;
-                    mComponents[poolId] = component;
+                    mComponents[poolId].insert(
+                           mComponents[poolId].end(),
+                           components.begin(), components.end());
                 }
                 break;
             case C2PlatformAllocatorStore::GRALLOC:
@@ -380,7 +384,9 @@ public:
                         std::make_shared<C2PooledBlockPool>(allocator, poolId);
                     *pool = ptr;
                     mBlockPools[poolId] = ptr;
-                    mComponents[poolId] = component;
+                    mComponents[poolId].insert(
+                           mComponents[poolId].end(),
+                           components.begin(), components.end());
                 }
                 break;
             case C2PlatformAllocatorStore::BUFFERQUEUE:
@@ -392,7 +398,9 @@ public:
                                     allocator, poolId);
                     *pool = ptr;
                     mBlockPools[poolId] = ptr;
-                    mComponents[poolId] = component;
+                    mComponents[poolId].insert(
+                           mComponents[poolId].end(),
+                           components.begin(), components.end());
                 }
                 break;
             default:
@@ -403,7 +411,9 @@ public:
                 if (res == C2_OK) {
                     *pool = ptr;
                     mBlockPools[poolId] = ptr;
-                    mComponents[poolId] = component;
+                    mComponents[poolId].insert(
+                           mComponents[poolId].end(),
+                           components.begin(), components.end());
                 }
                 break;
         }
@@ -412,9 +422,9 @@ public:
 
     c2_status_t createBlockPool(
             C2PlatformAllocatorStore::id_t allocatorId,
-            std::shared_ptr<const C2Component> component,
+            std::vector<std::shared_ptr<const C2Component>> components,
             std::shared_ptr<C2BlockPool> *pool) {
-        return _createBlockPool(allocatorId, component, mBlockPoolSeqId++, pool);
+        return _createBlockPool(allocatorId, components, mBlockPoolSeqId++, pool);
     }
 
     bool getBlockPool(
@@ -430,8 +440,13 @@ public:
                 mBlockPools.erase(it);
                 mComponents.erase(blockPoolId);
             } else {
-                auto found = mComponents.find(blockPoolId);
-                if (component == found->second.lock()) {
+                auto found = std::find_if(
+                        mComponents[blockPoolId].begin(),
+                        mComponents[blockPoolId].end(),
+                        [component](const std::weak_ptr<const C2Component> &ptr) {
+                            return component == ptr.lock();
+                        });
+                if (found != mComponents[blockPoolId].end()) {
                     *pool = ptr;
                     return true;
                 }
@@ -444,7 +459,7 @@ private:
     C2BlockPool::local_id_t mBlockPoolSeqId;
 
     std::map<C2BlockPool::local_id_t, std::weak_ptr<C2BlockPool>> mBlockPools;
-    std::map<C2BlockPool::local_id_t, std::weak_ptr<const C2Component>> mComponents;
+    std::map<C2BlockPool::local_id_t, std::vector<std::weak_ptr<const C2Component>>> mComponents;
 };
 
 static std::unique_ptr<_C2BlockPoolCache> sBlockPoolCache =
@@ -484,7 +499,7 @@ c2_status_t GetCodec2BlockPool(
     // TODO: remove this. this is temporary
     case C2BlockPool::PLATFORM_START:
         res = sBlockPoolCache->_createBlockPool(
-                C2PlatformAllocatorStore::BUFFERQUEUE, component, id, pool);
+                C2PlatformAllocatorStore::BUFFERQUEUE, {component}, id, pool);
         break;
     default:
         break;
@@ -494,12 +509,22 @@ c2_status_t GetCodec2BlockPool(
 
 c2_status_t CreateCodec2BlockPool(
         C2PlatformAllocatorStore::id_t allocatorId,
+        const std::vector<std::shared_ptr<const C2Component>> &components,
+        std::shared_ptr<C2BlockPool> *pool) {
+    pool->reset();
+
+    std::lock_guard<std::mutex> lock(sBlockPoolCacheMutex);
+    return sBlockPoolCache->createBlockPool(allocatorId, components, pool);
+}
+
+c2_status_t CreateCodec2BlockPool(
+        C2PlatformAllocatorStore::id_t allocatorId,
         std::shared_ptr<const C2Component> component,
         std::shared_ptr<C2BlockPool> *pool) {
     pool->reset();
 
     std::lock_guard<std::mutex> lock(sBlockPoolCacheMutex);
-    return sBlockPoolCache->createBlockPool(allocatorId, component, pool);
+    return sBlockPoolCache->createBlockPool(allocatorId, {component}, pool);
 }
 
 class C2PlatformComponentStore : public C2ComponentStore {
