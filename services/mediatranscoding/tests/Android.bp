@@ -14,6 +14,7 @@ cc_defaults {
     ],
 
     shared_libs: [
+        "libactivitymanager_aidl",
         "libbinder",
         "libbinder_ndk",
         "liblog",
