@@ -50,6 +50,7 @@ cc_library_shared {
         "libmediautils",
         "libnbaio",
         "libnblog",
+        "libpermission",
         "libpowermanager",
         "libmediautils",
         "libmemunreachable",
@@ -65,6 +66,10 @@ cc_library_shared {
     header_libs: [
         "libaudiohal_headers",
         "libmedia_headers",
+    ],
+
+    export_shared_lib_headers: [
+        "libpermission",
     ],
 
     cflags: [
