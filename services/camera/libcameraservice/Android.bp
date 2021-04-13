@@ -95,6 +95,7 @@ cc_library_shared {
         "libutils",
         "libbinder",
         "libactivitymanager_aidl",
+        "libpermission",
         "libcutils",
         "libmedia",
         "libmediautils",
@@ -139,6 +140,7 @@ cc_library_shared {
     export_shared_lib_headers: [
         "libbinder",
         "libactivitymanager_aidl",
+        "libpermission",
         "libcamera_client",
         "libfmq",
         "vendor.qti.hardware.camera.device@1.0",
